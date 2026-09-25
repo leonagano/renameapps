@@ -26,7 +26,7 @@ export default function FeedPanel({
   return (
     <aside
       id="feedPanel"
-      className={`w-80 glass-dark border-l border-white/10 flex-col h-full transition-all duration-300 z-30 shadow-2xl relative shrink-0 ${
+      className={`fixed md:static inset-0 md:inset-auto w-full md:w-80 feed-panel-surface border-l border-white/10 flex-col h-full transition-all duration-300 z-50 md:z-30 shadow-2xl shrink-0 ${
         open ? "flex" : "hidden"
       }`}
     >

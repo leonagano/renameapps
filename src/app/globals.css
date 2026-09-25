@@ -31,6 +31,21 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
+/* Full-screen mobile overlay (feed panel) needs a solid backdrop — the
+   translucent glass effect looks like ghosting when it covers the whole
+   viewport instead of sitting beside content as a slim sidebar. */
+.feed-panel-surface {
+  background: #0b1120;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+@media (min-width: 768px) {
+  .feed-panel-surface {
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+  }
+}
+
 .glass-card {
   background: transparent;
   border: none;

@@ -27,7 +27,7 @@ export default function LaunchpadApp({
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortMode>("popular");
   const [page, setPage] = useState(1);
-  const [feedPanelOpen, setFeedPanelOpen] = useState(true);
+  const [feedPanelOpen, setFeedPanelOpen] = useState(false);
   const [editingAppId, setEditingAppId] = useState<string | null>(null);
   const [alternatives, setAlternatives] = useState<RenameRecord[]>([]);
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -44,6 +44,16 @@ export default function LaunchpadApp({
       if (!localStorage.getItem(ONBOARDING_STORAGE_KEY)) setOnboardingOpen(true);
     } catch {
       // Private browsing / blocked storage: just skip onboarding persistence.
+    }
+  }, []);
+
+  useEffect(() => {
+    // The feed panel starts closed (SSR-safe default that also matches
+    // mobile), then opens itself only on desktop-sized viewports so it
+    // doesn't take over the screen on first load on phones.
+    if (window.matchMedia("(min-width: 768px)").matches) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setFeedPanelOpen(true);
     }
   }, []);
 
@@ -317,7 +327,7 @@ export default function LaunchpadApp({
       <main className="flex-1 relative flex overflow-hidden">
         <div
           ref={gridRef}
-          className="flex-1 overflow-hidden px-4 sm:px-8 py-3 flex flex-col justify-between"
+          className="flex-1 overflow-y-auto px-4 sm:px-8 py-3 flex flex-col justify-between"
         >
           <div>
             <div className="max-w-7xl mx-auto mb-2 flex justify-end">
