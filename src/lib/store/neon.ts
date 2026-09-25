@@ -1,4 +1,5 @@
 import { neon } from "@neondatabase/serverless";
+import { SEED_APPS } from "@/lib/data/seed-apps";
 import type {
   AppWithHonestName,
   FeedItem,
@@ -10,6 +11,76 @@ import type {
 import { GLOBAL_LIMIT_MAX, type Store } from "@/lib/store/types";
 
 const sql = neon(process.env.DATABASE_URL!);
+
+// Lazily creates the schema and seeds the starter dataset the first time this
+// serverless instance touches the database — so a freshly-provisioned Neon
+// database (no migration step run yet) still works out of the box. Cached per
+// warm instance so it only runs once, not on every request.
+let readyPromise: Promise<void> | null = null;
+
+function ensureReady(): Promise<void> {
+  if (!readyPromise) readyPromise = initializeDatabase();
+  return readyPromise;
+}
+
+async function initializeDatabase(): Promise<void> {
+  await sql`
+    CREATE TABLE IF NOT EXISTS apps (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      slug VARCHAR(80) UNIQUE,
+      original_name VARCHAR(100) NOT NULL,
+      icon_bg VARCHAR(120) NOT NULL DEFAULT 'from-red-500 to-rose-700',
+      icon_class VARCHAR(80) NOT NULL DEFAULT 'fa-solid fa-cube',
+      category VARCHAR(50) NOT NULL,
+      website_url TEXT,
+      is_sponsored BOOLEAN DEFAULT FALSE,
+      sponsor_tier VARCHAR(20) DEFAULT 'free',
+      sponsor_expires_at TIMESTAMP WITH TIME ZONE,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS renames (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      app_id UUID REFERENCES apps(id) ON DELETE CASCADE,
+      honest_name VARCHAR(120) NOT NULL,
+      upvotes INTEGER DEFAULT 1,
+      ip_hash VARCHAR(64) NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS rate_limits (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      ip_hash VARCHAR(64) NOT NULL,
+      app_id UUID REFERENCES apps(id) ON DELETE CASCADE,
+      action_type VARCHAR(20) NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+  await sql`CREATE INDEX IF NOT EXISTS idx_rate_limits_ip_app ON rate_limits (ip_hash, app_id, action_type)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_rate_limits_ip_created ON rate_limits (ip_hash, created_at)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_renames_app ON renames (app_id, upvotes DESC)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_apps_category ON apps (category)`;
+
+  const existing = (await sql`SELECT COUNT(*)::int AS count FROM apps`) as unknown as {
+    count: number;
+  }[];
+  if (existing[0].count > 0) return;
+
+  for (const seed of SEED_APPS) {
+    const inserted = (await sql`
+      INSERT INTO apps (slug, original_name, category, icon_bg, icon_class)
+      VALUES (${seed.id}, ${seed.name}, ${seed.category}, ${seed.iconBg}, ${seed.iconClass})
+      RETURNING id
+    `) as unknown as { id: string }[];
+
+    await sql`
+      INSERT INTO renames (app_id, honest_name, upvotes, ip_hash)
+      VALUES (${inserted[0].id}, ${seed.honestName}, 1, 'seed')
+    `;
+  }
+}
 
 interface AppRow {
   id: string;
@@ -50,6 +121,7 @@ function mapAppRow(row: AppRow, hasUpvoted: boolean): AppWithHonestName {
 
 export const neonStore: Store = {
   async listApps(ipHash) {
+    await ensureReady();
     const rows = (await sql`
       SELECT
         a.id, a.original_name, a.category, a.icon_bg, a.icon_class,
@@ -76,6 +148,7 @@ export const neonStore: Store = {
   },
 
   async listAlternatives(appId) {
+    await ensureReady();
     const rows = (await sql`
       SELECT id, app_id, honest_name, upvotes, created_at
       FROM renames
@@ -99,6 +172,7 @@ export const neonStore: Store = {
   },
 
   async submitRename(appId, honestName, ipHash): Promise<RenameSubmitResult> {
+    await ensureReady();
     const trimmed = honestName.trim();
     if (!trimmed || trimmed.length > 120) return { ok: false, reason: "invalid" };
 
@@ -152,6 +226,7 @@ export const neonStore: Store = {
   },
 
   async toggleUpvote(appId, renameId, ipHash): Promise<UpvoteResult> {
+    await ensureReady();
     const renameRows = (await sql`
       SELECT id FROM renames WHERE id = ${renameId} AND app_id = ${appId}
     `) as unknown as { id: string }[];
@@ -177,6 +252,7 @@ export const neonStore: Store = {
   },
 
   async listFeed(limit) {
+    await ensureReady();
     const rows = (await sql`
       SELECT r.id AS rename_id, r.app_id, a.original_name AS app_name, r.honest_name, r.created_at
       FROM renames r
@@ -201,6 +277,7 @@ export const neonStore: Store = {
   },
 
   async createFromTally(submission: TallySubmission): Promise<AppWithHonestName> {
+    await ensureReady();
     const tierDays =
       submission.tier === "takeover" ? 14 : submission.tier === "featured" ? 7 : null;
 
