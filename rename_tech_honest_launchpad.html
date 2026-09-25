@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rename Tech - Honest macOS Launchpad</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Permanent Marker for handwritten renames & Inter for macOS UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Permanent+Marker&family=Kalam:wght@700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons for macOS UI elements -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    /* Custom font families */
+    .font-marker {
+      font-family: 'Permanent Marker', 'Kalam', cursive, sans-serif;
+    }
+    .font-mac {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* macOS Wallpapers dynamic gradient & glassmorphism */
+    .macos-bg {
+      background: radial-gradient(circle at 20% 20%, #ff5252 0%, transparent 40%),
+                  radial-gradient(circle at 80% 30%, #7c4dff 0%, transparent 50%),
+                  radial-gradient(circle at 50% 80%, #00e676 0%, transparent 45%),
+                  radial-gradient(circle at 90% 85%, #ffab00 0%, transparent 35%),
+                  linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0284c7 100%);
+      background-attachment: fixed;
+    }
+
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .glass-dark {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .glass-card:hover {
+      background: rgba(255, 255, 255, 0.22);
+      border-color: rgba(255, 255, 255, 0.4);
+      transform: translateY(-3px) scale(1.02);
+    }
+
+    /* macOS App Squircle styling */
+    .app-icon {
+      border-radius: 22%;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+    }
+
+    .app-card:hover .app-icon {
+      transform: scale(1.08) rotate(-1deg);
+      box-shadow: 0 18px 30px -5px rgba(0, 0, 0, 0.4), 0 10px 12px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.45);
+    }
+
+    /* Pulse animation for ticker highlighting */
+    @keyframes pulse-highlight {
+      0% { ring-width: 0px; ring-color: rgba(239, 68, 68, 0.8); transform: scale(1); }
+      50% { ring-width: 8px; ring-color: rgba(239, 68, 68, 1); transform: scale(1.08); }
+      100% { ring-width: 0px; ring-color: rgba(239, 68, 68, 0); transform: scale(1); }
+    }
+
+    .highlight-pulse {
+      animation: pulse-highlight 1.5s cubic-bezier(0.4, 0, 0.6, 1) 2;
+      z-index: 30;
+    }
+
+    /* Text stroke effect for marker readability */
+    .marker-text {
+      color: #ef4444;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8), 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+
+    /* Smooth page transitions */
+    .tab-content {
+      transition: opacity 0.25s ease-in-out;
+    }
+  </style>
+</head>
+
+<body class="macos-bg font-mac text-white min-h-screen flex flex-col overflow-x-hidden selection:bg-red-500 selection:text-white">
+
+  <!-- macOS Top Menu Bar -->
+  <header class="glass-dark sticky top-0 z-40 w-full px-4 py-2 flex items-center justify-between text-xs sm:text-sm font-medium border-b border-white/10 shadow-lg select-none">
+    <div class="flex items-center space-x-3 overflow-x-auto no-scrollbar py-0.5">
+      <!-- Apple Logo & App Title -->
+      <div class="flex items-center space-x-2 mr-2 cursor-pointer" onclick="resetFilters()">
+        <i class="fa-brands fa-apple text-base text-white/90 hover:text-white transition"></i>
+        <span class="font-bold tracking-tight text-white flex items-center gap-1.5">
+          Rename Tech
+          <span class="text-[10px] bg-red-500/80 text-white font-semibold px-1.5 py-0.2 rounded-full uppercase tracking-wider">v2.0</span>
+        </span>
+      </div>
+
+      <!-- Quick Category Nav Pills -->
+      <nav class="hidden md:flex items-center space-x-1" id="categoryNav">
+        <!-- Injected via JavaScript -->
+      </nav>
+    </div>
+
+    <!-- Right Controls: Search, Add Button & Activity Toggle -->
+    <div class="flex items-center space-x-2.5 shrink-0">
+      <!-- Search Input -->
+      <div class="relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-white/50 text-xs"></i>
+        <input 
+          type="text" 
+          id="searchInput" 
+          placeholder="Search 50+ apps..." 
+          oninput="handleSearch()"
+          class="bg-white/10 hover:bg-white/15 focus:bg-white/20 text-white placeholder-white/50 text-xs rounded-lg pl-8 pr-3 py-1.5 outline-none border border-white/10 focus:border-red-400/80 transition w-36 sm:w-56"
+        />
+        <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-2 top-1/2 -translate-y-1/2 text-white/50 hover:text-white text-xs">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Add Missing Tech Button -->
+      <button 
+        onclick="openAddAppModal()"
+        class="bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-semibold text-xs px-3 py-1.5 rounded-lg shadow-md hover:shadow-lg transition flex items-center space-x-1.5 active:scale-95"
+      >
+        <i class="fa-solid fa-plus text-[10px]"></i>
+        <span class="hidden sm:inline">Add Tech</span>
+      </button>
+
+      <!-- Toggle Feed Drawer Button -->
+      <button 
+        onclick="toggleFeedPanel()" 
+        title="Toggle Activity Feed"
+        class="bg-white/10 hover:bg-white/20 text-white p-1.5 rounded-lg border border-white/10 transition relative active:scale-95"
+      >
+        <i class="fa-solid fa-bolt text-xs text-yellow-300"></i>
+        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-ping"></span>
+        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Category Ribbon -->
+  <div class="md:hidden glass-dark border-b border-white/10 px-3 py-2 flex items-center space-x-1.5 overflow-x-auto no-scrollbar text-xs" id="mobileCategoryNav">
+    <!-- Injected via JS -->
+  </div>
+
+  <!-- Main Workspace Canvas -->
+  <main class="flex-1 relative flex overflow-hidden">
+    
+    <!-- Launchpad Central Grid Container -->
+    <div class="flex-1 overflow-y-auto px-4 sm:px-8 py-6 flex flex-col justify-between" id="gridScrollContainer">
+      <div>
+        <!-- Stats Banner & Active Filter Title -->
+        <div class="max-w-7xl mx-auto mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 glass-panel p-4 rounded-2xl shadow-xl">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white shadow-lg text-lg">
+              <i class="fa-solid fa-pen-nib"></i>
+            </div>
+            <div>
+              <h1 class="text-base sm:text-lg font-bold flex items-center gap-2">
+                <span id="activeCategoryTitle">All Tech Companies</span>
+                <span id="appCountBadge" class="text-xs font-normal bg-white/20 text-white/90 px-2 py-0.5 rounded-full">52 apps</span>
+              </h1>
+              <p class="text-xs text-white/70">Click any app to give it an honest crowd-sourced name.</p>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-3 text-xs w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-white/10">
+            <!-- Sort Selector -->
+            <div class="flex items-center space-x-1.5">
+              <span class="text-white/60">Sort:</span>
+              <select id="sortSelect" onchange="handleSortChange()" class="bg-black/30 text-white text-xs rounded-lg px-2 py-1 border border-white/10 outline-none focus:border-red-400">
+                <option value="popular">Most Roasted 🔥</option>
+                <option value="alphabetical">Name (A-Z)</option>
+                <option value="recent">Recently Renamed</option>
+              </select>
+            </div>
+
+            <!-- Total Edits Stats Badge -->
+            <div class="bg-black/30 px-3 py-1 rounded-lg border border-white/10 flex items-center space-x-1.5 text-white/80">
+              <i class="fa-solid fa-fire text-amber-400"></i>
+              <span id="totalEditsCount">14,291</span> <span class="text-white/50">renames</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Launchpad High-Density App Grid -->
+        <div 
+          id="appsGrid" 
+          class="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 sm:gap-6 min-h-[400px]"
+        >
+          <!-- App Cards injected dynamically by JS -->
+        </div>
+
+        <!-- No Results Empty State -->
+        <div id="noResultsState" class="hidden flex-col items-center justify-center py-20 text-center">
+          <div class="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-3xl mb-3 text-white/60">
+            <i class="fa-solid fa-ghost"></i>
+          </div>
+          <h3 class="text-lg font-bold">No tech companies found</h3>
+          <p class="text-xs text-white/60 max-w-sm mt-1">Try tweaking your search term or add this missing company to the board!</p>
+          <button onclick="openAddAppModal()" class="mt-4 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-4 py-2 rounded-xl transition">
+            Add This Company
+          </button>
+        </div>
+      </div>
+
+      <!-- macOS Launchpad Pagination Dots -->
+      <div class="max-w-7xl mx-auto w-full py-6 flex flex-col items-center justify-center space-y-2">
+        <div id="paginationDots" class="flex items-center space-x-2">
+          <!-- Dots generated via JS -->
+        </div>
+        <p class="text-[11px] text-white/50 tracking-wider font-mono">macOS Launchpad Canvas • Double-click or tap to edit</p>
+      </div>
+
+    </div>
+
+    <!-- "Recently Renamed" Live Activity Feed Drawer -->
+    <aside 
+      id="feedPanel" 
+      class="w-80 glass-dark border-l border-white/10 flex flex-col h-full transition-all duration-300 z-30 shadow-2xl relative"
+    >
+      <!-- Panel Header -->
+      <div class="p-4 border-b border-white/10 flex items-center justify-between shrink-0">
+        <div class="flex items-center space-x-2">
+          <span class="relative flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+          </span>
+          <h2 class="font-bold text-sm tracking-wide">Recently Renamed</h2>
+        </div>
+        <button onclick="toggleFeedPanel()" class="text-white/50 hover:text-white transition text-xs p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Ticker Subhead -->
+      <div class="bg-black/20 px-4 py-2 border-b border-white/5 flex items-center justify-between text-[11px] text-white/60">
+        <span>Live Crowd Stream</span>
+        <span class="text-emerald-400 font-mono" id="liveTickerBadge">● LIVE UPDATES</span>
+      </div>
+
+      <!-- Scrollable Activity List -->
+      <div id="feedList" class="flex-1 overflow-y-auto p-3 space-y-2.5">
+        <!-- Feed items injected via JS -->
+      </div>
+
+      <!-- Feed Footer -->
+      <div class="p-3 bg-black/30 border-t border-white/10 text-center text-[11px] text-white/50">
+        Sarcasm provided by users worldwide 🌍
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- Edit Honest Name Modal (macOS Window Style) -->
+  <div id="editModal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 transition-opacity duration-200">
+    <div class="glass-dark border border-white/20 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden transform transition-all scale-95 opacity-0" id="editModalBox">
+      
+      <!-- macOS Window Header Bar -->
+      <div class="bg-white/10 px-4 py-3 flex items-center justify-between border-b border-white/10 select-none">
+        <div class="flex items-center space-x-2">
+          <button onclick="closeEditModal()" class="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 transition flex items-center justify-center text-[8px] text-black/60 font-bold">✕</button>
+          <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+          <div class="w-3 h-3 rounded-full bg-green-500"></div>
+        </div>
+        <span class="text-xs font-semibold text-white/80" id="modalAppTitle">Rename App</span>
+        <div class="w-12"></div>
+      </div>
+
+      <!-- Modal Content Body -->
+      <div class="p-6">
+        <!-- App Header Preview -->
+        <div class="flex items-center space-x-4 mb-6 bg-white/5 p-3 rounded-xl border border-white/10">
+          <div id="modalAppIcon" class="w-14 h-14 rounded-[22%] flex items-center justify-center text-2xl font-bold text-white shadow-lg shrink-0">
+            <!-- Dynamic Icon -->
+          </div>
+          <div>
+            <div class="text-xs text-white/50 uppercase tracking-wider">Original Name</div>
+            <div id="modalOriginalName" class="text-lg font-bold text-white">Slack</div>
+            <div class="text-xs text-emerald-400 mt-0.5" id="modalCategoryTag">Productivity</div>
+          </div>
+        </div>
+
+        <!-- Current Honest Name Display -->
+        <div class="mb-4">
+          <label class="block text-xs font-medium text-white/70 mb-1">Current Community Honest Name</label>
+          <div id="modalCurrentHonest" class="font-marker text-red-400 text-lg bg-black/40 px-3 py-2 rounded-lg border border-red-500/30">
+            "Anxiety Red Dot"
+          </div>
+        </div>
+
+        <!-- Input New Honest Name -->
+        <div class="mb-6">
+          <label for="honestInput" class="block text-xs font-medium text-white/90 mb-1">
+            Your Honest Name <span class="text-red-400">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="honestInput" 
+            maxlength="40"
+            placeholder="e.g. Merge Conflict Simulator"
+            class="w-full bg-black/50 border border-white/20 focus:border-red-400 rounded-xl px-3.5 py-2.5 text-white font-marker text-base outline-none transition placeholder-white/30"
+            onkeyup="if(event.key === 'Enter') submitAppRename()"
+          />
+          <div class="flex justify-between text-[11px] text-white/40 mt-1">
+            <span>Keep it funny, short & cheeky!</span>
+            <span id="charCount">0/40</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center space-x-3">
+          <button 
+            onclick="closeEditModal()" 
+            class="flex-1 bg-white/10 hover:bg-white/15 text-white text-xs font-medium py-2.5 rounded-xl border border-white/10 transition"
+          >
+            Cancel
+          </button>
+          <button 
+            onclick="submitAppRename()" 
+            class="flex-1 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white text-xs font-bold py-2.5 rounded-xl shadow-lg transition active:scale-95 flex items-center justify-center space-x-1"
+          >
+            <i class="fa-solid fa-check text-xs"></i>
+            <span>Publish Rename</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Missing Tech Modal -->
+  <div id="addModal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 transition-opacity duration-200">
+    <div class="glass-dark border border-white/20 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden transform transition-all scale-95 opacity-0" id="addModalBox">
+      
+      <!-- Window Header -->
+      <div class="bg-white/10 px-4 py-3 flex items-center justify-between border-b border-white/10 select-none">
+        <div class="flex items-center space-x-2">
+          <button onclick="closeAddAppModal()" class="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 transition flex items-center justify-center text-[8px] text-black/60 font-bold">✕</button>
+          <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+          <div class="w-3 h-3 rounded-full bg-green-500"></div>
+        </div>
+        <span class="text-xs font-semibold text-white/80">Add Missing Tech</span>
+        <div class="w-12"></div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-white/80 mb-1">Company / Product Name <span class="text-red-400">*</span></label>
+          <input 
+            type="text" 
+            id="newAppName" 
+            placeholder="e.g. Linear, Supabase, Datadog" 
+            class="w-full bg-black/50 border border-white/20 focus:border-red-400 rounded-xl px-3.5 py-2 text-white text-xs outline-none transition"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-white/80 mb-1">Category <span class="text-red-400">*</span></label>
+          <select id="newAppCategory" class="w-full bg-black/50 border border-white/20 focus:border-red-400 rounded-xl px-3 py-2 text-white text-xs outline-none transition">
+            <option value="AI & LLMs">AI & LLMs</option>
+            <option value="DevTools">DevTools</option>
+            <option value="Cloud & Infra">Cloud & Infra</option>
+            <option value="Social">Social</option>
+            <option value="Productivity">Productivity</option>
+            <option value="Enterprise">Enterprise</option>
+            <option value="VCs & Startups">VCs & Startups</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-white/80 mb-1">Initial Honest Name <span class="text-red-400">*</span></label>
+          <input 
+            type="text" 
+            id="newAppHonest" 
+            placeholder="e.g. Keyboard Shortcuts Nobody Uses" 
+            class="w-full bg-black/50 border border-white/20 focus:border-red-400 rounded-xl px-3.5 py-2 text-white font-marker text-sm outline-none transition"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-white/80 mb-1">Icon Style / Color</label>
+          <div class="flex items-center space-x-2" id="colorPickerOptions">
+            <!-- Preset Color Options -->
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-3 pt-2">
+          <button onclick="closeAddAppModal()" class="flex-1 bg-white/10 hover:bg-white/15 text-white text-xs font-medium py-2.5 rounded-xl border border-white/10 transition">
+            Cancel
+          </button>
+          <button onclick="submitNewTechApp()" class="flex-1 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white text-xs font-bold py-2.5 rounded-xl shadow-lg transition active:scale-95">
+            Add to Launchpad
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none">
+    <!-- Toasts injected via JS -->
+  </div>
+
+  <script>
+    // Initial dataset of 52 iconic tech apps with witty honest names & icon styles
+    const DEFAULT_APPS = [
+      { id: "slack", name: "Slack", honestName: "Anxiety Red Dot", category: "Productivity", upvotes: 1842, iconBg: "from-purple-600 to-indigo-700", iconText: "S", iconClass: "fa-brands fa-slack" },
+      { id: "openai", name: "OpenAI", honestName: "Sam's Hype Factory", category: "AI & LLMs", upvotes: 2410, iconBg: "from-emerald-500 to-teal-700", iconText: "AI", iconClass: "fa-solid fa-brain" },
+      { id: "anthropic", name: "Anthropic", honestName: "Safety Meeting Generator", category: "AI & LLMs", upvotes: 1290, iconBg: "from-amber-600 to-orange-700", iconText: "A", iconClass: "fa-solid fa-robot" },
+      { id: "zoom", name: "Zoom", honestName: "Are You On Mute?", category: "Productivity", upvotes: 1650, iconBg: "from-blue-500 to-cyan-600", iconText: "Z", iconClass: "fa-solid fa-video" },
+      { id: "linkedin", name: "LinkedIn", honestName: "Humblebrag Hub", category: "Social", upvotes: 3105, iconBg: "from-blue-700 to-indigo-900", iconText: "in", iconClass: "fa-brands fa-linkedin-in" },
+      { id: "notion", name: "Notion", honestName: "Over-Engineered To-Do", category: "Productivity", upvotes: 1420, iconBg: "from-neutral-800 to-zinc-950", iconText: "N", iconClass: "fa-solid fa-note-sticky" },
+      { id: "vscode", name: "VS Code", honestName: "RAM Eater 3000", category: "DevTools", upvotes: 1980, iconBg: "from-sky-500 to-blue-700", iconText: "VS", iconClass: "fa-solid fa-code" },
+      { id: "spotify", name: "Spotify", honestName: "Code Core + Cry", category: "Social", upvotes: 1210, iconBg: "from-emerald-500 to-green-600", iconText: "Sp", iconClass: "fa-brands fa-spotify" },
+      { id: "aws", name: "AWS", honestName: "Surprise $5,000 Bill", category: "Cloud & Infra", upvotes: 2890, iconBg: "from-amber-500 to-yellow-600", iconText: "AWS", iconClass: "fa-brands fa-aws" },
+      { id: "github", name: "GitHub", honestName: "Merge Conflict Arena", category: "DevTools", upvotes: 2150, iconBg: "from-gray-800 to-black", iconText: "GH", iconClass: "fa-brands fa-github" },
+      { id: "stripe", name: "Stripe", honestName: "3% Cut of My Dreams", category: "Enterprise", upvotes: 1760, iconBg: "from-violet-600 to-purple-800", iconText: "S", iconClass: "fa-brands fa-stripe" },
+      { id: "vercel", name: "Vercel", honestName: "Next.js Propaganda", category: "Cloud & Infra", upvotes: 1540, iconBg: "from-black to-zinc-800", iconText: "V", iconClass: "fa-solid fa-triangle-exclamation" },
+      { id: "figma", name: "Figma", honestName: "10 People Watching You Move A Pixel", category: "Productivity", upvotes: 1890, iconBg: "from-rose-500 to-purple-600", iconText: "F", iconClass: "fa-brands fa-figma" },
+      { id: "discord", name: "Discord", honestName: "Unmoderated Chaos Lounge", category: "Social", upvotes: 1670, iconBg: "from-indigo-500 to-blue-600", iconText: "D", iconClass: "fa-brands fa-discord" },
+      { id: "twitter", name: "X / Twitter", honestName: "Dunning-Kruger Arena", category: "Social", upvotes: 3420, iconBg: "from-zinc-900 to-black", iconText: "X", iconClass: "fa-brands fa-x-twitter" },
+      { id: "reddit", name: "Reddit", honestName: "Thread Closed 11 yrs Ago", category: "Social", upvotes: 2010, iconBg: "from-orange-600 to-red-600", iconText: "R", iconClass: "fa-brands fa-reddit-alien" },
+      { id: "supabase", name: "Supabase", honestName: "Firebase with SQL Propaganda", category: "DevTools", upvotes: 980, iconBg: "from-emerald-600 to-teal-800", iconText: "SB", iconClass: "fa-solid fa-database" },
+      { id: "datadog", name: "Datadog", honestName: "More Expensive Than Cloud", category: "Cloud & Infra", upvotes: 1830, iconBg: "from-purple-700 to-indigo-900", iconText: "DD", iconClass: "fa-solid fa-dog" },
+      { id: "linear", name: "Linear", honestName: "Shortcuts Nobody Remembers", category: "Productivity", upvotes: 1120, iconBg: "from-indigo-600 to-slate-900", iconText: "L", iconClass: "fa-solid fa-bars-staggered" },
+      { id: "postman", name: "Postman", honestName: "Overcomplicated Curl", category: "DevTools", upvotes: 890, iconBg: "from-orange-500 to-amber-600", iconText: "P", iconClass: "fa-solid fa-paper-plane" },
+      { id: "docker", name: "Docker", honestName: "It Works On My Machine", category: "DevTools", upvotes: 2310, iconBg: "from-sky-600 to-blue-800", iconText: "D", iconClass: "fa-brands fa-docker" },
+      { id: "chatgpt", name: "ChatGPT", honestName: "My Real Senior Engineer", category: "AI & LLMs", upvotes: 3890, iconBg: "from-teal-600 to-emerald-800", iconText: "GPT", iconClass: "fa-solid fa-comments" },
+      { id: "midjourney", name: "Midjourney", honestName: "7 Fingers Generator", category: "AI & LLMs", upvotes: 1450, iconBg: "from-blue-900 to-slate-950", iconText: "MJ", iconClass: "fa-solid fa-wand-magic-sparkles" },
+      { id: "uber", name: "Uber", honestName: "Taxi With 500% Surge", category: "Enterprise", upvotes: 1340, iconBg: "from-black to-zinc-900", iconText: "U", iconClass: "fa-solid fa-car" },
+      { id: "salesforce", name: "Salesforce", honestName: "1998 Database in 2026", category: "Enterprise", upvotes: 2210, iconBg: "from-sky-500 to-blue-700", iconText: "SF", iconClass: "fa-solid fa-cloud" },
+      { id: "yc", name: "Y Combinator", honestName: "SaaS Wrapper Factory", category: "VCs & Startups", upvotes: 2750, iconBg: "from-orange-500 to-amber-600", iconText: "YC", iconClass: "fa-solid fa-hand-holding-dollar" },
+      { id: "netflix", name: "Netflix", honestName: "30 Min Scroll, 5 Min Sleep", category: "Social", upvotes: 1620, iconBg: "from-red-700 to-rose-900", iconText: "N", iconClass: "fa-solid fa-film" },
+      { id: "tesla", name: "Tesla", honestName: "FSD (For Real This Year)", category: "Enterprise", upvotes: 1980, iconBg: "from-red-600 to-zinc-900", iconText: "T", iconClass: "fa-solid fa-bolt" },
+      { id: "apple", name: "Apple", honestName: "$1,200 Stand Sold Separately", category: "Enterprise", upvotes: 3120, iconBg: "from-zinc-300 to-zinc-600", iconText: "", iconClass: "fa-brands fa-apple" },
+      { id: "google", name: "Google", honestName: "Killed Product Graveyard", category: "Enterprise", upvotes: 2940, iconBg: "from-blue-500 via-red-500 to-yellow-500", iconText: "G", iconClass: "fa-brands fa-google" },
+      { id: "microsoft", name: "Microsoft", honestName: "Forced Reboot At 4PM", category: "Enterprise", upvotes: 2510, iconBg: "from-blue-600 to-teal-600", iconText: "MS", iconClass: "fa-brands fa-microsoft" },
+      { id: "meta", name: "Meta", honestName: "Eavesdropping On Your Dinner", category: "Social", upvotes: 2680, iconBg: "from-blue-600 to-indigo-800", iconText: "M", iconClass: "fa-brands fa-meta" },
+      { id: "stackoverflow", name: "Stack Overflow", honestName: "Closed as Duplicate", category: "DevTools", upvotes: 3510, iconBg: "from-amber-600 to-orange-700", iconText: "SO", iconClass: "fa-brands fa-stack-overflow" },
+      { id: "cloudflare", name: "Cloudflare", honestName: "502 Gateway Saver", category: "Cloud & Infra", upvotes: 1420, iconBg: "from-orange-500 to-amber-600", iconText: "CF", iconClass: "fa-solid fa-shield-halved" },
+      { id: "jira", name: "Jira", honestName: "Agile Suffering Tracker", category: "Productivity", upvotes: 3890, iconBg: "from-blue-600 to-indigo-800", iconText: "J", iconClass: "fa-solid fa-list-check" },
+      { id: "mongodb", name: "MongoDB", honestName: "Web Scale (Lost My Data)", category: "DevTools", upvotes: 1150, iconBg: "from-emerald-700 to-green-900", iconText: "MDB", iconClass: "fa-solid fa-leaf" },
+      { id: "kubernetes", name: "Kubernetes", honestName: "PhD Required for Nginx", category: "Cloud & Infra", upvotes: 2640, iconBg: "from-blue-600 to-cyan-700", iconText: "K8s", iconClass: "fa-solid fa-dharmachakra" },
+      { id: "twilio", name: "Twilio", honestName: "2FA Text Sender", category: "Enterprise", upvotes: 780, iconBg: "from-red-600 to-rose-800", iconText: "2FA", iconClass: "fa-solid fa-comment-sms" },
+      { id: "producthunt", name: "Product Hunt", honestName: "Wrapper App Upvote Ring", category: "VCs & Startups", upvotes: 2190, iconBg: "from-orange-600 to-rose-600", iconText: "PH", iconClass: "fa-solid fa-rocket" },
+      { id: "hackernews", name: "Hacker News", honestName: "Built This in C in 3 Hours", category: "VCs & Startups", upvotes: 2840, iconBg: "from-orange-500 to-amber-600", iconText: "Y", iconClass: "fa-brands fa-y-combinator" },
+      { id: "substack", name: "Substack", honestName: "Unread Newsletter Box", category: "Social", upvotes: 940, iconBg: "from-orange-500 to-amber-600", iconText: "SS", iconClass: "fa-solid fa-newspaper" },
+      { id: "canva", name: "Canva", honestName: "Photoshop for Marketers", category: "Productivity", upvotes: 1250, iconBg: "from-cyan-500 to-blue-600", iconText: "C", iconClass: "fa-solid fa-palette" },
+      { id: "tiktok", name: "TikTok", honestName: "Dopamine Shredder", category: "Social", upvotes: 3210, iconBg: "from-teal-400 via-pink-500 to-black", iconText: "TT", iconClass: "fa-brands fa-tiktok" },
+      { id: "instagram", name: "Instagram", honestName: "Fake Vacation Photos", category: "Social", upvotes: 2790, iconBg: "from-amber-500 via-rose-500 to-purple-600", iconText: "IG", iconClass: "fa-brands fa-instagram" },
+      { id: "sentry", name: "Sentry", honestName: "10,000 Unhandled Exceptions", category: "DevTools", upvotes: 1090, iconBg: "from-purple-800 to-slate-900", iconText: "S", iconClass: "fa-solid fa-bug" },
+      { id: "heroku", name: "Heroku", honestName: "RIP Free Tier", category: "Cloud & Infra", upvotes: 2040, iconBg: "from-purple-600 to-indigo-800", iconText: "H", iconClass: "fa-solid fa-cubes" },
+      { id: "redis", name: "Redis", honestName: "Cache Everything & Pray", category: "DevTools", upvotes: 1380, iconBg: "from-red-600 to-rose-800", iconText: "R", iconClass: "fa-solid fa-bolt-lightning" },
+      { id: "postgresql", name: "PostgreSQL", honestName: "Old Reliable Elephant", category: "DevTools", upvotes: 2450, iconBg: "from-blue-700 to-slate-800", iconText: "PG", iconClass: "fa-solid fa-elephant" },
+      { id: "raycast", name: "Raycast", honestName: "Spotlight on Steroids", category: "Productivity", upvotes: 1560, iconBg: "from-red-500 to-orange-600", iconText: "RC", iconClass: "fa-solid fa-terminal" },
+      { id: "cursor", name: "Cursor", honestName: "Vibe Coding Engine", category: "DevTools", upvotes: 3120, iconBg: "from-indigo-600 to-purple-800", iconText: "Cu", iconClass: "fa-solid fa-i-cursor" },
+      { id: "medium", name: "Medium", honestName: "Paywall After 3 Lines", category: "Social", upvotes: 1140, iconBg: "from-black to-zinc-800", iconText: "M", iconClass: "fa-brands fa-medium" },
+      { id: "asana", name: "Asana", honestName: "Unfinished Gantt Chart", category: "Productivity", upvotes: 890, iconBg: "from-rose-500 to-pink-600", iconText: "A", iconClass: "fa-solid fa-circle-nodes" }
+    ];
+
+    const CATEGORIES = ["All", "AI & LLMs", "DevTools", "Cloud & Infra", "Social", "Productivity", "Enterprise", "VCs & Startups"];
+    const PRESET_COLORS = [
+      "from-red-500 to-rose-700",
+      "from-purple-600 to-indigo-800",
+      "from-emerald-500 to-teal-700",
+      "from-amber-500 to-orange-700",
+      "from-sky-500 to-blue-700",
+      "from-zinc-700 to-black"
+    ];
+
+    let apps = [];
+    let currentCategory = "All";
+    let searchQuery = "";
+    let currentSort = "popular";
+    let currentPage = 1;
+    const ITEMS_PER_PAGE = 24;
+    let selectedAppId = null;
+    let userUpvoted = new Set();
+    let feedActivities = [];
+
+    window.onload = function() {
+      initData();
+      renderCategoryNav();
+      renderColorPicker();
+      renderAppGrid();
+      initLiveTicker();
+    };
+
+    function initData() {
+      // Load saved apps from localStorage if available
+      const savedApps = localStorage.getItem('rename_tech_apps');
+      if (savedApps) {
+        try {
+          apps = JSON.parse(savedApps);
+        } catch(e) {
+          apps = [...DEFAULT_APPS];
+        }
+      } else {
+        apps = [...DEFAULT_APPS];
+      }
+
+      // Load user upvotes
+      const savedUpvotes = localStorage.getItem('rename_tech_upvotes');
+      if (savedUpvotes) {
+        try {
+          userUpvoted = new Set(JSON.parse(savedUpvotes));
+        } catch(e){}
+      }
+
+      // Generate seed feed activity items
+      generateInitialFeed();
+      updateTotalEditsCounter();
+    }
+
+    function saveAppsToStorage() {
+      localStorage.setItem('rename_tech_apps', JSON.stringify(apps));
+      localStorage.setItem('rename_tech_upvotes', JSON.stringify(Array.from(userUpvoted)));
+    }
+
+    function updateTotalEditsCounter() {
+      const totalRenames = apps.reduce((sum, app) => sum + (app.upvotes || 0), 12400);
+      document.getElementById('totalEditsCount').innerText = totalRenames.toLocaleString();
+    }
+
+    function renderCategoryNav() {
+      const desktopNav = document.getElementById('categoryNav');
+      const mobileNav = document.getElementById('mobileCategoryNav');
+
+      const buildPills = (isMobile) => CATEGORIES.map(cat => {
+        const isActive = cat === currentCategory;
+        const activeClass = isActive 
+          ? 'bg-red-500/80 text-white font-semibold shadow-md border-red-400/50' 
+          : 'bg-white/5 hover:bg-white/15 text-white/70 hover:text-white border-white/10';
+        return `
+          <button 
+            onclick="setCategory('${cat}')"
+            class="px-2.5 py-1 rounded-lg border text-xs whitespace-nowrap transition active:scale-95 ${activeClass}"
+          >
+            ${cat === 'All' ? '<i class="fa-solid fa-grid-2 mr-1"></i>' : ''}${cat}
+          </button>
+        `;
+      }).join('');
+
+      desktopNav.innerHTML = buildPills(false);
+      mobileNav.innerHTML = buildPills(true);
+    }
+
+    function setCategory(cat) {
+      currentCategory = cat;
+      currentPage = 1;
+      document.getElementById('activeCategoryTitle').innerText = cat === 'All' ? 'All Tech Companies' : cat;
+      renderCategoryNav();
+      renderAppGrid();
+    }
+
+    function handleSearch() {
+      const input = document.getElementById('searchInput');
+      searchQuery = input.value.trim().toLowerCase();
+      document.getElementById('clearSearchBtn').classList.toggle('hidden', searchQuery === '');
+      currentPage = 1;
+      renderAppGrid();
+    }
+
+    function clearSearch() {
+      document.getElementById('searchInput').value = '';
+      searchQuery = '';
+      document.getElementById('clearSearchBtn').classList.add('hidden');
+      renderAppGrid();
+    }
+
+    function resetFilters() {
+      currentCategory = 'All';
+      searchQuery = '';
+      document.getElementById('searchInput').value = '';
+      document.getElementById('clearSearchBtn').classList.add('hidden');
+      currentPage = 1;
+      renderCategoryNav();
+      renderAppGrid();
+    }
+
+    function handleSortChange() {
+      currentSort = document.getElementById('sortSelect').value;
+      renderAppGrid();
+    }
+
+    function getFilteredApps() {
+      return apps.filter(app => {
+        const matchesCategory = currentCategory === 'All' || app.category === currentCategory;
+        const matchesSearch = searchQuery === '' || 
+          app.name.toLowerCase().includes(searchQuery) || 
+          app.honestName.toLowerCase().includes(searchQuery) ||
+          app.category.toLowerCase().includes(searchQuery);
+        return matchesCategory && matchesSearch;
+      }).sort((a, b) => {
+        if (currentSort === 'popular') return (b.upvotes || 0) - (a.upvotes || 0);
+        if (currentSort === 'alphabetical') return a.name.localeCompare(b.name);
+        if (currentSort === 'recent') return (b.lastRenamed || 0) - (a.lastRenamed || 0);
+        return 0;
+      });
+    }
+
+    function renderAppGrid() {
+      const filtered = getFilteredApps();
+      const grid = document.getElementById('appsGrid');
+      const emptyState = document.getElementById('noResultsState');
+      const badge = document.getElementById('appCountBadge');
+
+      badge.innerText = `${filtered.length} apps`;
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        emptyState.classList.add('flex');
+        document.getElementById('paginationDots').innerHTML = '';
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      emptyState.classList.remove('flex');
+
+      // Pagination math
+      const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
+      if (currentPage > totalPages) currentPage = totalPages;
+      const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+      const pageApps = filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+      grid.innerHTML = pageApps.map(app => {
+        const isUpvoted = userUpvoted.has(app.id);
+        return `
+          <div 
+            id="app-card-${app.id}"
+            class="app-card glass-card rounded-2xl p-3.5 flex flex-col items-center justify-between text-center relative group cursor-pointer select-none transition-all duration-200"
+            onclick="openEditModal('${app.id}')"
+          >
+            <!-- Upvote Flame Button -->
+            <button 
+              onclick="event.stopPropagation(); toggleUpvote('${app.id}')" 
+              class="absolute top-2 right-2 opacity-80 group-hover:opacity-100 bg-black/40 hover:bg-black/60 px-2 py-0.5 rounded-full text-[10px] flex items-center space-x-1 border border-white/10 transition z-10 ${isUpvoted ? 'text-amber-400 font-bold border-amber-400/40 bg-amber-500/20' : 'text-white/70'}"
+              title="Upvote Roast"
+            >
+              <i class="fa-solid fa-fire text-[10px] ${isUpvoted ? 'text-amber-400 animate-bounce' : 'text-white/50'}"></i>
+              <span>${app.upvotes || 0}</span>
+            </button>
+
+            <!-- Edit Hover Badge -->
+            <div class="absolute top-2 left-2 opacity-0 group-hover:opacity-100 bg-red-500/80 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md transition duration-150">
+              <i class="fa-solid fa-pencil mr-1"></i>Edit
+            </div>
+
+            <!-- App Icon Squircle -->
+            <div class="mt-2 mb-3">
+              <div class="app-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br ${app.iconBg} flex items-center justify-center text-white text-2xl sm:text-3xl font-extrabold shadow-lg relative overflow-hidden border border-white/20">
+                <i class="${app.iconClass} drop-shadow-md"></i>
+              </div>
+            </div>
+
+            <!-- Honest Name & Was Text -->
+            <div class="w-full flex-1 flex flex-col justify-center">
+              <div class="font-marker text-red-400 text-xs sm:text-sm leading-tight mb-1 line-clamp-2 hover:underline marker-text">
+                "${app.honestName}"
+              </div>
+              <div class="text-[11px] text-white/50 font-medium tracking-tight">
+                was <span class="text-white/80">${app.name}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      renderPaginationDots(totalPages);
+    }
+
+    function renderPaginationDots(totalPages) {
+      const container = document.getElementById('paginationDots');
+      if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+      }
+
+      let html = '';
+      for (let i = 1; i <= totalPages; i++) {
+        const isActive = i === currentPage;
+        html += `
+          <button 
+            onclick="goToPage(${i})"
+            class="h-2.5 rounded-full transition-all duration-200 ${isActive ? 'w-8 bg-red-500 shadow-md' : 'w-2.5 bg-white/30 hover:bg-white/60'}"
+            title="Page ${i}"
+          ></button>
+        `;
+      }
+      container.innerHTML = html;
+    }
+
+    function goToPage(page) {
+      currentPage = page;
+      renderAppGrid();
+      document.getElementById('gridScrollContainer').scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function toggleUpvote(appId) {
+      const app = apps.find(a => a.id === appId);
+      if (!app) return;
+
+      if (userUpvoted.has(appId)) {
+        userUpvoted.delete(appId);
+        app.upvotes = Math.max(0, (app.upvotes || 1) - 1);
+        showToast(`Removed upvote for ${app.name}`);
+      } else {
+        userUpvoted.add(appId);
+        app.upvotes = (app.upvotes || 0) + 1;
+        showToast(`🔥 Upvoted "${app.honestName}" for ${app.name}!`);
+      }
+
+      saveAppsToStorage();
+      renderAppGrid();
+      updateTotalEditsCounter();
+    }
+
+    function openEditModal(appId) {
+      const app = apps.find(a => a.id === appId);
+      if (!app) return;
+
+      selectedAppId = appId;
+      document.getElementById('modalAppTitle').innerText = `Rename ${app.name}`;
+      document.getElementById('modalOriginalName').innerText = app.name;
+      document.getElementById('modalCategoryTag').innerText = app.category;
+      document.getElementById('modalCurrentHonest').innerText = `"${app.honestName}"`;
+
+      const iconBox = document.getElementById('modalAppIcon');
+      iconBox.className = `w-14 h-14 rounded-[22%] bg-gradient-to-br ${app.iconBg} flex items-center justify-center text-2xl font-bold text-white shadow-lg shrink-0 border border-white/20`;
+      iconBox.innerHTML = `<i class="${app.iconClass}"></i>`;
+
+      const input = document.getElementById('honestInput');
+      input.value = '';
+      updateCharCount();
+
+      const modal = document.getElementById('editModal');
+      const modalBox = document.getElementById('editModalBox');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modalBox.classList.remove('scale-95', 'opacity-0');
+        modalBox.classList.add('scale-100', 'opacity-100');
+        input.focus();
+      }, 10);
+
+      input.oninput = updateCharCount;
+    }
+
+    function updateCharCount() {
+      const val = document.getElementById('honestInput').value;
+      document.getElementById('charCount').innerText = `${val.length}/40`;
+    }
+
+    function closeEditModal() {
+      const modal = document.getElementById('editModal');
+      const modalBox = document.getElementById('editModalBox');
+      modalBox.classList.remove('scale-100', 'opacity-100');
+      modalBox.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        selectedAppId = null;
+      }, 150);
+    }
+
+    function submitAppRename() {
+      if (!selectedAppId) return;
+      const input = document.getElementById('honestInput');
+      const newHonest = input.value.trim();
+
+      if (!newHonest) {
+        showToast("Please enter a new honest name!", "error");
+        return;
+      }
+
+      const app = apps.find(a => a.id === selectedAppId);
+      if (app) {
+        const oldName = app.honestName;
+        app.honestName = newHonest;
+        app.lastRenamed = Date.now();
+        app.upvotes = (app.upvotes || 0) + 1;
+
+        saveAppsToStorage();
+        closeEditModal();
+        renderAppGrid();
+        updateTotalEditsCounter();
+
+        // Inject new live feed entry
+        addFeedActivity(app.name, newHonest, "Just now", app.id);
+        showToast(`🎉 Renamed ${app.name} to "${newHonest}"!`);
+      }
+    }
+
+    function openAddAppModal() {
+      const modal = document.getElementById('addModal');
+      const modalBox = document.getElementById('addModalBox');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modalBox.classList.remove('scale-95', 'opacity-0');
+        modalBox.classList.add('scale-100', 'opacity-100');
+        document.getElementById('newAppName').focus();
+      }, 10);
+    }
+
+    function closeAddAppModal() {
+      const modal = document.getElementById('addModal');
+      const modalBox = document.getElementById('addModalBox');
+      modalBox.classList.remove('scale-100', 'opacity-100');
+      modalBox.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 150);
+    }
+
+    let selectedColorIndex = 0;
+    function renderColorPicker() {
+      const container = document.getElementById('colorPickerOptions');
+      container.innerHTML = PRESET_COLORS.map((color, idx) => `
+        <div 
+          onclick="selectColor(${idx})"
+          class="w-8 h-8 rounded-xl bg-gradient-to-br ${color} cursor-pointer border-2 transition ${idx === selectedColorIndex ? 'border-white scale-110 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'}"
+        ></div>
+      `).join('');
+    }
+
+    function selectColor(idx) {
+      selectedColorIndex = idx;
+      renderColorPicker();
+    }
+
+    function submitNewTechApp() {
+      const nameInput = document.getElementById('newAppName').value.trim();
+      const category = document.getElementById('newAppCategory').value;
+      const honestInput = document.getElementById('newAppHonest').value.trim();
+
+      if (!nameInput || !honestInput) {
+        showToast("Please fill in both app name and honest name!", "error");
+        return;
+      }
+
+      const id = nameInput.toLowerCase().replace(/[^a-z0-9]/g, '') + '-' + Date.now();
+      const newApp = {
+        id: id,
+        name: nameInput,
+        honestName: honestInput,
+        category: category,
+        upvotes: 1,
+        iconBg: PRESET_COLORS[selectedColorIndex],
+        iconText: nameInput.substring(0, 2).toUpperCase(),
+        iconClass: "fa-solid fa-cube",
+        lastRenamed: Date.now()
+      };
+
+      apps.unshift(newApp);
+      userUpvoted.add(id);
+      saveAppsToStorage();
+      closeAddAppModal();
+
+      // Reset form
+      document.getElementById('newAppName').value = '';
+      document.getElementById('newAppHonest').value = '';
+
+      setCategory("All");
+      showToast(`🚀 Added ${nameInput} to Launchpad!`);
+      addFeedActivity(nameInput, honestInput, "Just now", id);
+      updateTotalEditsCounter();
+    }
+
+    function generateInitialFeed() {
+      feedActivities = [
+        { appName: "Slack", honest: "Anxiety Red Dot", time: "2m ago", appId: "slack" },
+        { appName: "Zoom", honest: "Virtual Purgatory", time: "5m ago", appId: "zoom" },
+        { appName: "LinkedIn", honest: "Corporate Cringe Hub", time: "11m ago", appId: "linkedin" },
+        { appName: "Spotify", honest: "Code Core + Cry", time: "18m ago", appId: "spotify" },
+        { appName: "AWS", honest: "Surprise $5k Monthly Bill", time: "24m ago", appId: "aws" },
+        { appName: "ChatGPT", honest: "My Real Boss", time: "31m ago", appId: "chatgpt" },
+        { appName: "Jira", honest: "Agile Suffering Tracker", time: "42m ago", appId: "jira" }
+      ];
+      renderFeedList();
+    }
+
+    function addFeedActivity(appName, honest, timeStr, appId) {
+      feedActivities.unshift({ appName, honest, time: timeStr, appId });
+      if (feedActivities.length > 25) feedActivities.pop();
+      renderFeedList();
+    }
+
+    function renderFeedList() {
+      const container = document.getElementById('feedList');
+      container.innerHTML = feedActivities.map(item => `
+        <div 
+          onclick="highlightAppCard('${item.appId}')"
+          class="bg-white/5 hover:bg-white/10 p-3 rounded-xl border border-white/10 transition cursor-pointer group active:scale-98"
+        >
+          <div class="font-marker text-red-400 text-sm leading-snug group-hover:underline">
+            "${item.honest}"
+          </div>
+          <div class="flex items-center justify-between text-[11px] text-white/50 mt-1">
+            <span>was <strong class="text-white/80 font-semibold">${item.appName}</strong></span>
+            <span class="text-white/40">${item.time}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function highlightAppCard(appId) {
+      // Find app and navigate to page if needed
+      const filtered = getFilteredApps();
+      const index = filtered.findIndex(a => a.id === appId);
+      if (index !== -1) {
+        const page = Math.floor(index / ITEMS_PER_PAGE) + 1;
+        if (currentPage !== page) {
+          goToPage(page);
+        }
+
+        setTimeout(() => {
+          const card = document.getElementById(`app-card-${appId}`);
+          if (card) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            card.classList.add('highlight-pulse');
+            setTimeout(() => card.classList.remove('highlight-pulse'), 3000);
+          }
+        }, 150);
+      }
+    }
+
+    // Simulate periodic live crowdsourced renames from around the world
+    function initLiveTicker() {
+      const MOCK_RENAMES = [
+        { name: "VS Code", honest: "RAM Hog 9000", id: "vscode" },
+        { name: "Notion", honest: "Procrastination Studio", id: "notion" },
+        { name: "Docker", honest: "Whale of Confusion", id: "docker" },
+        { name: "Kubernetes", honest: "Over-Engineering Deluxe", id: "kubernetes" },
+        { name: "Uber", honest: "Surge Pricing Simulator", id: "uber" },
+        { name: "Stack Overflow", honest: "Duplicate Thread Graveyard", id: "stackoverflow" }
+      ];
+
+      setInterval(() => {
+        const randomItem = MOCK_RENAMES[Math.floor(Math.random() * MOCK_RENAMES.length)];
+        const minutes = Math.floor(Math.random() * 5) + 1;
+        addFeedActivity(randomItem.name, randomItem.honest, `${minutes}m ago`, randomItem.id);
+      }, 16000);
+    }
+
+    function toggleFeedPanel() {
+      const panel = document.getElementById('feedPanel');
+      panel.classList.toggle('hidden');
+    }
+
+    function showToast(message, type = "success") {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      
+      const bgClass = type === "error" 
+        ? "bg-red-900/90 border-red-500 text-red-200" 
+        : "bg-slate-900/90 border-emerald-500/50 text-white";
+
+      toast.className = `glass-dark border px-4 py-2.5 rounded-xl shadow-2xl text-xs font-medium flex items-center space-x-2 transition-all duration-300 transform translate-y-4 opacity-0 pointer-events-auto ${bgClass}`;
+      toast.innerHTML = `
+        <i class="${type === 'error' ? 'fa-solid fa-circle-exclamation text-red-400' : 'fa-solid fa-circle-check text-emerald-400'}"></i>
+        <span>${message}</span>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove('translate-y-4', 'opacity-0');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
