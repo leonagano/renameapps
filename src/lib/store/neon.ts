@@ -97,6 +97,7 @@ interface AppRow {
   honest_name_id: string | null;
   upvotes: number | null;
   last_renamed_at: string | null;
+  rename_count?: number | string | null;
 }
 
 function mapAppRow(row: AppRow, hasUpvoted: boolean): AppWithHonestName {
@@ -116,6 +117,7 @@ function mapAppRow(row: AppRow, hasUpvoted: boolean): AppWithHonestName {
     upvotes: row.upvotes ?? 0,
     lastRenamedAt: row.last_renamed_at,
     hasUpvoted,
+    renameCount: Number(row.rename_count ?? (row.honest_name ? 1 : 0)),
   };
 }
 
@@ -126,7 +128,8 @@ export const neonStore: Store = {
       SELECT
         a.id, a.original_name, a.category, a.icon_bg, a.icon_class,
         a.website_url, a.is_sponsored, a.sponsor_tier, a.sponsor_expires_at, a.created_at,
-        top.honest_name, top.id AS honest_name_id, top.upvotes, top.created_at AS last_renamed_at
+        top.honest_name, top.id AS honest_name_id, top.upvotes, top.created_at AS last_renamed_at,
+        COALESCE(counts.rename_count, 0) AS rename_count
       FROM apps a
       LEFT JOIN LATERAL (
         SELECT r.id, r.honest_name, r.upvotes, r.created_at
@@ -135,6 +138,11 @@ export const neonStore: Store = {
         ORDER BY r.upvotes DESC, r.created_at DESC
         LIMIT 1
       ) top ON true
+      LEFT JOIN LATERAL (
+        SELECT COUNT(*)::int AS rename_count
+        FROM renames r
+        WHERE r.app_id = a.id
+      ) counts ON true
       ORDER BY a.is_sponsored DESC, a.created_at ASC
     `) as unknown as AppRow[];
 

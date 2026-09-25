@@ -108,6 +108,7 @@ export const memoryStore: Store = {
         upvotes: top?.upvotes ?? 0,
         lastRenamedAt: top?.createdAt ?? null,
         hasUpvoted: top ? db.upvoted.get(`${ipHash}:${app.id}`) === top.id : false,
+        renameCount: (db.renamesByApp.get(app.id) ?? []).length,
       });
     }
     return result;
@@ -218,6 +219,7 @@ export const memoryStore: Store = {
       upvotes: rename.upvotes,
       lastRenamedAt: rename.createdAt,
       hasUpvoted: false,
+      renameCount: 1,
     };
   },
 };

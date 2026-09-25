@@ -64,6 +64,18 @@ export default function AppCard({
         <div className="text-[11px] text-white/50 font-medium tracking-tight">
           was <span className="text-white/80">{app.name}</span>
         </div>
+        {app.renameCount > 1 && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpen(app.id);
+            }}
+            className="text-[10px] text-amber-400/90 hover:text-amber-300 transition mt-0.5"
+          >
+            <i className="fa-solid fa-fire text-[9px] mr-1"></i>
+            {app.renameCount} alternatives
+          </button>
+        )}
       </div>
     </div>
   );

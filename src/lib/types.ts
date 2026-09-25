@@ -27,6 +27,7 @@ export interface AppWithHonestName extends AppRecord {
   upvotes: number;
   lastRenamedAt: string | null;
   hasUpvoted: boolean;
+  renameCount: number;
 }
 
 export interface FeedItem {
